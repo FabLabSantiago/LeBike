@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#9c9c9c">
+    <!--
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.95"
+        tools:context="org.fablabsantiago.smartcities.app.lebikee.LeBikeActivity"/>
+        -->
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.95"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Dónde vas?"
+            android:textColor="#ffffff"
+            android:textSize="30sp"
+            android:gravity="center"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="10dp"/>
+        <ListView
+            android:id="@+id/destinationsList"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="#5f5f5f">
+        </ListView>
+
+        <!--<Button
+            android:id="@+id/destination_casa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="  Casa"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:background="#5f5f5f"
+            android:onClick="startRoute"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="5dp"/>
+        <Button
+            android:id="@+id/destination_oficina"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="  Oficina"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:background="#5f5f5f"
+            android:onClick="startRoute"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="5dp"/>
+        <Button
+            android:id="@+id/destination_supermercado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="  Súpermercado"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            android:background="#5f5f5f"
+            android:onClick="startRoute"/>
+            -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="5dp"/>
+        <Button
+            android:id="@+id/destination_otro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:gravity="center"
+            android:text="Otro +"
+            android:textColor="#5f5f5f"
+            android:textSize="15sp"
+            android:background="#ffffff"
+            android:onClick="otroRoute"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_weight="0.05"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Mis Destinos"
+            android:background="#ffffff"
+            android:textSize="12sp"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Mis Alertas"
+            android:background="#ffffff"
+            android:textSize="12sp"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Amigos"
+            android:background="#ffffff"
+            android:textSize="12sp"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Perfil"
+            android:background="#ffffff"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+</LinearLayout>
