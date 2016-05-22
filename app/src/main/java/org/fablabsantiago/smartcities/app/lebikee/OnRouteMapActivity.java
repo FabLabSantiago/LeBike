@@ -144,7 +144,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             if(mCurrentLocation == null)
             {
                 Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
-                //TO DO: desplegar menú para activar localización.
+                //TODO: desplegar menú para activar localización.
             }
             else
             {

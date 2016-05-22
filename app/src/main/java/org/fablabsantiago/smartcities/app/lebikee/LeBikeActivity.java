@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCallback
 {
@@ -55,9 +56,15 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
     /* Otro+ - OnClick */
     public void otroRoute(View view)
     {
-        int id = view.getId();
-        Log.i("LeBikeActivity","startRoute, id:" + Integer.toString(id));
-        Intent onRouteMapIntent = new Intent(this, OnRouteMapActivity.class);
-        startActivity(onRouteMapIntent);
+        String infoText = "Option not available for the moment.\n" +
+                        "Later you will be able to add new destinations and we will recomend the" +
+                        " best route to get there. ";
+        // TODO: We will use google map apis:
+        //     - Google Places API for Android
+        //     - Google Maps Road API (web)
+        //     - Google Maps Directions API (web)
+        // For now we will just have 3 destinations with its routes predefined. We will be able to
+        // add event in the route and the notifications have to be enabled.
+        Toast.makeText(this,infoText,Toast.LENGTH_LONG).show();
     }
 }
