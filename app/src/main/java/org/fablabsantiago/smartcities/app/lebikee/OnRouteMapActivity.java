@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -36,6 +37,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.StreetViewPanoramaCamera;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OnRouteMapActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -45,6 +60,10 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
+
+    private GoogleMap mMap;
+    private LatLng destination;
+    private LatLng fablabSCL;
 
     SharedPreferences leBikePrefs;
     boolean bTrackingRoute;
@@ -109,6 +128,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     @Override
     public void onMapReady(GoogleMap googleMap)
     {
+        mMap = googleMap;
+
         Log.i("MainActivity:onMapReady", "in");
         //Check for location permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
@@ -156,12 +177,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             }
         }
 
-        //Configure Map Options
-        //googleMap.setMyLocationEnabled(true); //commented because of the explained bellow
-        //googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
-
-        //Setup initial focus view of the map
+        //Setup initial focus view of the map and route markers
         //     Importante notar que en esta etapa del trabajo no estan incluidas ni se implementarán
         // funciones de detectar la ruta hacia un lugar específico (GMDirectionsApi) si no que se
         // asumiran tres destinos predefinidos y con ellos tres rutas predefinidas a cada uno. Pero
@@ -174,20 +190,132 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         mCurrentLocation.setLatitude(-33.449796);
         mCurrentLocation.setLongitude(-70.6277000);
 
+        fablabSCL = new LatLng(-33.449796, -70.6277000);
+        destination = new LatLng(-33.432336,-70.653274);
+
         if(mCurrentLocation == null)
         {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-33.458704, -70.643623), 10));
+            return;
+        }
+
+        //Configure Map Options
+        googleMap.setMyLocationEnabled(true); //commented because of the explained bellow
+        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
+        {
+            @Override
+            public boolean onMyLocationButtonClick()
+            {
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
+                return true;
+            }
+        });
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+
+        //Load route from storage
+        List<LatLng> route = loadRoute("route1.gpx");
+
+        // GUI elemens for the map
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
+        googleMap.addMarker(new MarkerOptions()
+                .position(fablabSCL)
+                .title("Fablab Santiago")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        googleMap.addMarker(new MarkerOptions()
+                .position(destination)
+                .title("Estación Mapocho")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+        if(route != null)
+        {
+            googleMap.addPolyline(new PolylineOptions().width((float) 5.0).addAll(route));
         }
         else
         {
-            LatLng fabLabSCL = new LatLng(-33.449796, -70.6277000);
-            LatLng initialFocusLocation = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            googleMap.addMarker(new MarkerOptions()
-                    .position(fabLabSCL)
-                    .title("Fablab Santiago")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(fabLabSCL,initialFocusLocation),100));
+            Toast.makeText(this,"Error loading route. Please contact: Mati",Toast.LENGTH_SHORT).show();
         }
+    }
+
+    protected LatLngBounds correctBounds(LatLng marker1, LatLng marker2)
+    {
+        //Works for south east hemisphere (With the ecuator and first meridian as reference).
+        double m1Lat = marker1.latitude;
+        double m1Lon = marker1.longitude;
+        double m2Lat = marker2.latitude;
+        double m2Lon = marker2.longitude;
+        double swLat = m2Lat;
+        double swLon = m2Lon;
+        double neLat = m1Lat;
+        double neLon = m1Lon;
+
+        if (m1Lat - m2Lat < 0)
+        {
+            swLat = m1Lat;
+            neLat = m2Lat;
+        }
+        if (m1Lon - m2Lon < 0)
+        {
+            swLon = m1Lon;
+            neLon = m2Lon;
+        }
+
+        return new LatLngBounds(new LatLng(swLat,swLon), new LatLng(neLat,neLon));
+    }
+
+    protected List<LatLng> loadRoute(String routeName)
+    {
+        List<LatLng> routePoints = new ArrayList<LatLng>();
+        try
+        {
+            Log.i("OnRouteMapActivity","onMapReady: parse: Begining xml parsing test");
+
+            XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
+            XmlPullParser gpxParser = xmlFactoryObject.newPullParser();
+
+            InputStream inStream = this.getAssets().open(routeName);
+            gpxParser.setInput(inStream, null);
+
+            /*Log.i("OnRouteMapActivity","onMapReady: parse: load complete:" + Integer.toString(inStream.read()) + " " +
+                    Integer.toString(inStream.read()) + " " +
+                    Integer.toString(inStream.read()) + " " +
+                    Integer.toString(inStream.read()) + " " +
+                    Integer.toString(inStream.read()) + "(ASCII values)");*/
+
+            int eventType = gpxParser.getEventType();
+            String tag;
+            while (eventType != XmlPullParser.END_DOCUMENT)
+            {
+                // TODO: gpx parse can be optimized by documents structure
+                // Se puede optimizar el parse del gpx pensando en como esta estructurado el gpx.
+                // Por ejemplo una vez que ya estamos en trkpt se asume que el proximo será asi.
+                if(eventType == XmlPullParser.START_TAG)
+                {
+                    tag = gpxParser.getName();
+                    //Log.i("OnRouteMapActivity","onMapReady: parse: Start tag " + tag);
+                    if (tag.equals("trkpt"))
+                    {
+                        String lat = gpxParser.getAttributeValue(null,"lat");
+                        String lon = gpxParser.getAttributeValue(null,"lon");
+                        Log.i("OnRouteMapActivity","onMapReady: parse: " + lat + ", " + lon);
+                        routePoints.add(new LatLng(Float.valueOf(lat), Float.valueOf(lon)));
+                    }
+                }
+                eventType = gpxParser.next();
+            }
+            Log.i("OnRouteMapActivity","onMapReady: parse: End document");
+        }
+        catch (XmlPullParserException e)
+        {
+            Log.i("OnRouteMapActivity","onMapReady: error en xml pull parser");
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            Log.i("OnRouteMapActivity","onMapReady: error getting route1.xml");
+            e.printStackTrace();
+        }
+
+        return routePoints;
     }
 
     @Override
