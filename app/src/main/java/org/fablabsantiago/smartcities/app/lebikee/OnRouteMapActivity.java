@@ -21,14 +21,18 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class OnRouteMapActivity extends AppCompatActivity implements
@@ -116,49 +120,69 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        //Check if location enabled, hacerlo al apretar el botón de comenzar
+
+        //Check if location enabled       and notify
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         {
-            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
             {
                 Toast.makeText(this,"Only network location is available. It may not be precise.",Toast.LENGTH_SHORT).show();
             }
-            else
+
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mCurrentLocation == null)
             {
-                Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Couldn't retrieve location. Try again later.",Toast.LENGTH_SHORT).show();
             }
-        }
-
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
-        LatLng me;
-        if (mCurrentLocation == null)
-        {
-            Toast.makeText(this, "Please enable GPS", Toast.LENGTH_SHORT).show();
-            me = new LatLng(-33.449796, -70.6277000);
         }
         else
         {
-            me = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if(mCurrentLocation == null)
+            {
+                Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
+                //TO DO: desplegar menú para activar localización.
+            }
+            else
+            {
+                Toast.makeText(this,"Location is being retrieved neither from gps nor from network.",Toast.LENGTH_SHORT).show();
+                Log.i("OnRouteMapActivity","onMapReady: Location is being retrieved neither from gps nor from network.");
+
+            }
         }
-        //Center map in Fablab Santiago and add marker
-        LatLng fabLabSCL = new LatLng(-33.449796, -70.6277000);
-        googleMap.addMarker(new MarkerOptions().position(me).title("My Position").visible(true));
-        googleMap.addMarker(new MarkerOptions().position(fabLabSCL).title("Fablab Santiago"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(me, 13));
+
+        //Configure Map Options
+        googleMap.setMyLocationEnabled(true);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+
+        //Setup initial focus view of the map
+        if(mCurrentLocation == null)
+        {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-33.458704, -70.643623), 10));
+        }
+        else
+        {
+            LatLng fabLabSCL = new LatLng(-33.449796, -70.6277000);
+            LatLng initialFocusLocation = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            googleMap.addMarker(new MarkerOptions().position(fabLabSCL).title("Fablab Santiago"));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(fabLabSCL,initialFocusLocation),100));
+        }
     }
 
     @Override
     public void onConnectionSuspended(int i)
     {
-
+        Log.i("OnRouteMapActivity","onConnectionSuspended - in");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
     {
-
+        Log.i("OnRouteMapActivity","onConnectionFailed - in");
     }
 
     /* OnClick - Comenzar recorrido */
