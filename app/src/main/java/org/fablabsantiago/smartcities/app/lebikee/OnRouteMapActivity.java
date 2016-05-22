@@ -31,6 +31,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -155,11 +157,23 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         }
 
         //Configure Map Options
-        googleMap.setMyLocationEnabled(true);
-        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        //googleMap.setMyLocationEnabled(true); //commented because of the explained bellow
+        //googleMap.getUiSettings().setMyLocationButtonEnabled(true);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
         //Setup initial focus view of the map
+        //     Importante notar que en esta etapa del trabajo no estan incluidas ni se implementarán
+        // funciones de detectar la ruta hacia un lugar específico (GMDirectionsApi) si no que se
+        // asumiran tres destinos predefinidos y con ellos tres rutas predefinidas a cada uno. Pero
+        // para esto debe haber también un punto de partida predefinido que por ahora será el fablab
+        // (para la feria se puede definir la estación mapopocho y crear nuevas rutas predefinidas).
+        //     Por eso puede que to-do esto no se justifique enteramente en esta etapa pero si es un
+        // proceso que debe realizarce de todas maneras y así se hace, aunque en el fondo no estemos
+        // usando nuestra localización.
+        mCurrentLocation = new Location("");
+        mCurrentLocation.setLatitude(-33.449796);
+        mCurrentLocation.setLongitude(-70.6277000);
+
         if(mCurrentLocation == null)
         {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-33.458704, -70.643623), 10));
@@ -168,7 +182,10 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         {
             LatLng fabLabSCL = new LatLng(-33.449796, -70.6277000);
             LatLng initialFocusLocation = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            googleMap.addMarker(new MarkerOptions().position(fabLabSCL).title("Fablab Santiago"));
+            googleMap.addMarker(new MarkerOptions()
+                    .position(fabLabSCL)
+                    .title("Fablab Santiago")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
             googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(fabLabSCL,initialFocusLocation),100));
         }
     }

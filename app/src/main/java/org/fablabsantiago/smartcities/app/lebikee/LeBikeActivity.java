@@ -31,11 +31,9 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
         super.onStart();
         final ListView patrimoniosListView = (ListView) findViewById(R.id.destinationsList);
         String[] patrimonios = new String[] {
-                "Mi Casa",
-                "Estación Mapocho",
-                "Casa Rosada",
-                "Fablab",
-                "Lomito Alemán"};
+                "Casa",
+                "Fablab Santiago",
+                "Súpermercado"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
         patrimoniosListView.setAdapter(adapter);
@@ -59,7 +57,8 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
         String infoText = "Option not available for the moment.\n" +
                         "Later you will be able to add new destinations and we will recomend the" +
                         " best route to get there. ";
-        // TODO: We will use google map apis:
+        // TODO: add new personalized destinations
+        // We will use google map apis:
         //     - Google Places API for Android
         //     - Google Maps Road API (web)
         //     - Google Maps Directions API (web)
