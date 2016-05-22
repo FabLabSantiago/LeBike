@@ -49,6 +49,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,14 +197,14 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         if(mCurrentLocation == null)
         {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-33.458704, -70.643623), 10));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-33.458704, -70.643623), 10));
             return;
         }
 
         //Configure Map Options
-        googleMap.setMyLocationEnabled(true); //commented because of the explained bellow
-        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
+        mMap.setMyLocationEnabled(true); //commented because of the explained bellow
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
         {
             @Override
             public boolean onMyLocationButtonClick()
@@ -211,24 +213,25 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                 return true;
             }
         });
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
 
         //Load route from storage
+
         List<LatLng> route = loadRoute("route1.gpx");
 
         // GUI elemens for the map
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
-        googleMap.addMarker(new MarkerOptions()
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
+        mMap.addMarker(new MarkerOptions()
                 .position(fablabSCL)
                 .title("Fablab Santiago")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-        googleMap.addMarker(new MarkerOptions()
+        mMap.addMarker(new MarkerOptions()
                 .position(destination)
                 .title("Estación Mapocho")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
         if(route != null)
         {
-            googleMap.addPolyline(new PolylineOptions().width((float) 5.0).addAll(route));
+            mMap.addPolyline(new PolylineOptions().width((float) 5.0).addAll(route));
         }
         else
         {
@@ -264,6 +267,66 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
     protected List<LatLng> loadRoute(String routeName)
     {
+        List<LatLng> list = new ArrayList<LatLng>();
+        try
+        {
+            InputStream inStream = this.getAssets().open(routeName);
+            list = parseRoute(inStream);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public void fetchRoute()
+    {
+        Log.i("OnRouteMapActivity","fetchGpx - in");
+
+        final List<LatLng> list = new ArrayList<LatLng>();
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                HttpURLConnection conn = null;
+                try
+                {
+                    URL url = new URL("https://raw.githubusercontent.com/stereo92/leBikee/master/RecursosExternos/route1.2");
+                    conn = (HttpURLConnection)url.openConnection();
+                    conn.setReadTimeout(10000 /* milliseconds */);
+                    conn.setConnectTimeout(15000 /* milliseconds */);
+                    conn.setRequestMethod("GET");
+                    conn.setDoInput(true);
+                    conn.connect();
+
+                    Log.i("OnRouteMapActivity","fetchGpx: http input stream, connect");
+
+                    InputStream stream = conn.getInputStream();
+
+                    List<LatLng> list = new ArrayList<LatLng>();
+                    list = parseRoute(stream);
+                    Log.i("OnRouteMapActivity","fetchGpx: route retrieved");
+                    //mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.LTGRAY).addAll(list));
+                    mMap.addPolyline(new PolylineOptions().add(new LatLng(-33.449796, -70.6277000), new LatLng(-33.432336,-70.653274)));
+                    Log.i("OnRouteMapActivity","fetchGpx: polyline drawn");
+
+                    stream.close();
+                }
+                catch (IOException e)
+                {
+                    Log.i("OnRouteMapActivity","fetchRoute: Error requesting gpx to server.");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
+    protected List<LatLng> parseRoute(InputStream inputStream)
+    {
         List<LatLng> routePoints = new ArrayList<LatLng>();
         try
         {
@@ -272,8 +335,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             XmlPullParserFactory xmlFactoryObject = XmlPullParserFactory.newInstance();
             XmlPullParser gpxParser = xmlFactoryObject.newPullParser();
 
-            InputStream inStream = this.getAssets().open(routeName);
-            gpxParser.setInput(inStream, null);
+            gpxParser.setInput(inputStream, null);
 
             /*Log.i("OnRouteMapActivity","onMapReady: parse: load complete:" + Integer.toString(inStream.read()) + " " +
                     Integer.toString(inStream.read()) + " " +
@@ -352,5 +414,10 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         editor.commit();
         refreshUI(bTrackingRoute);
 
+    }
+
+    public void malButtonOnClick(View view)
+    {
+        fetchRoute();
     }
 }

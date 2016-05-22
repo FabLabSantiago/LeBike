@@ -41,7 +41,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
-            android:text="Mal"/>
+            android:text="Mal"
+            android:onClick="malButtonOnClick"/>
     </LinearLayout>
 
 
