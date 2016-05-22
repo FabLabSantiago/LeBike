@@ -216,8 +216,9 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
         //Load route from storage
-
-        List<LatLng> route = loadRoute("route1.gpx");
+        // TODO: to robust the code against failiures in xml parsing.
+        List<LatLng> route1 = loadRoute("route1.gpx");
+        List<LatLng> route2 = loadRoute("route1.2.gpx");
 
         // GUI elemens for the map
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
@@ -229,9 +230,10 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                 .position(destination)
                 .title("Estación Mapocho")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-        if(route != null)
+        if(route1 != null && route2 != null)
         {
-            mMap.addPolyline(new PolylineOptions().width((float) 5.0).addAll(route));
+            mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.DKGRAY).addAll(route1));
+            mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.GRAY).addAll(route2));
         }
         else
         {
