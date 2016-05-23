@@ -127,22 +127,6 @@ public class OnRouteLocationService extends Service implements
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
-        /*SharedPreferences leBikePrefs = getSharedPreferences("leBikePreferences",MODE_PRIVATE);
-        boolean bTrackingRoute = leBikePrefs.getBoolean("BOOL_TRACKING_ROUTE",true); //si es true esta mal. Si no existe tambien esta mal
-        if (!bTrackingRoute)
-        {  //=false
-            bTrackingRoute = true;
-            SharedPreferences.Editor editor = leBikePrefs.edit();
-            editor.putBoolean("BOOL_TRACKING_ROUTE",bTrackingRoute);
-            editor.commit();
-            Button trackRouteButton = (Button) findViewById();
-        }
-        else
-        {
-            Log.e("OnRouteLocationService","WARNING: Error in boolTrackingRoute value");
-            Toast.makeText(this, "WARNING: Error in boolTrackingRoute value", Toast.LENGTH_SHORT).show();
-        }*/
-
     }
 
     @Override

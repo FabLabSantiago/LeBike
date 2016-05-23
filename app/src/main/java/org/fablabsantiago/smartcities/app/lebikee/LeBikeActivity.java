@@ -32,8 +32,8 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
         final ListView patrimoniosListView = (ListView) findViewById(R.id.destinationsList);
         String[] patrimonios = new String[] {
                 "Casa",
-                "Fablab Santiago",
-                "Súpermercado"};
+                "Beauchef 850",
+                "Estación Mapocho"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
         patrimoniosListView.setAdapter(adapter);
@@ -49,6 +49,10 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
                 startActivity(onRouteMapIntent);
             }
         });
+
+        // TODO: Crear clase ruta o destino.
+        // Aquí se agrupan to-do lo realacionado a cada ruta. Tiempo de viaje, puntaje, hotspots,
+        // nombre, etc...
     }
 
     /* Otro+ - OnClick */

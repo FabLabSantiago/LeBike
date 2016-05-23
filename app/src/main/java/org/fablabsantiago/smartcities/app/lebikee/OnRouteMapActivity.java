@@ -261,6 +261,9 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         try
         {
             InputStream inStream = this.getAssets().open(routeName);
+            // TODO: Idioma
+            // Asset: Dicese del sustantivo en íngles que en el español se refiere a un
+            //       valor, activo, acciones, recurso, ventaja, herramienta.
             list = parseRoute(inStream);
         }
         catch (IOException e)
