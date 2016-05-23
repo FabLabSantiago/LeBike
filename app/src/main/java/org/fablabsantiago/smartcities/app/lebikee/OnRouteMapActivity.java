@@ -10,7 +10,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,35 +19,24 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationAvailability;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.StreetViewPanoramaCamera;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -169,7 +157,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             if(mCurrentLocation == null)
             {
                 Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
-                //TODO: desplegar menú para activar localización.
+                // TODO: desplegar menú para activar localización.
             }
             else
             {
@@ -217,8 +205,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         //Load route from storage
         // TODO: to robust the code against failiures in xml parsing.
-        List<LatLng> route1 = loadRoute("route1.gpx");
-        List<LatLng> route2 = loadRoute("route1.2.gpx");
+        List<LatLng> route1 = loadRoute("fablab_estacionmapocho_2.gpx");
+        List<LatLng> route2 = loadRoute("fablab_estacionmapocho_1.gpx");
 
         // GUI elemens for the map
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
@@ -360,7 +348,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                     {
                         String lat = gpxParser.getAttributeValue(null,"lat");
                         String lon = gpxParser.getAttributeValue(null,"lon");
-                        Log.i("OnRouteMapActivity","onMapReady: parse: " + lat + ", " + lon);
+                        //Log.i("OnRouteMapActivity","onMapReady: parse: " + lat + ", " + lon);
                         routePoints.add(new LatLng(Float.valueOf(lat), Float.valueOf(lon)));
                     }
                 }
@@ -397,6 +385,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     /* OnClick - Comenzar recorrido */
     public void readLocationInBackground(View view)
     {
+        // TODO: confirm correct service load from the service.
+        // Actual implementation is blind to whats happening in the servie.
         Intent locationService = new Intent(this, OnRouteLocationService.class);
         if (!bTrackingRoute)
         {
@@ -418,6 +408,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
     }
 
+    /* OnClick - Cargar ruta desde servidor, con error */
     public void malButtonOnClick(View view)
     {
         fetchRoute();
