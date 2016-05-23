@@ -41,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class OnRouteMapActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -397,12 +398,19 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             startService(locationService);
             bTrackingRoute = true;
 
+            // TODO: El estado del botón bien debe ser actualizado con memoria.
+            // Guardar su estado y establecer su correcto estado al inicar de nuevo la aplicación.
+            Button bien = (Button) findViewById(R.id.bienButton);
+            bien.setEnabled(false);
         }
         else
         {
             Log.i("OnRouteMapActivity","onClick - cerrando servicio");
             stopService(locationService);
             bTrackingRoute = false;
+
+            Button bien = (Button) findViewById(R.id.bienButton);
+            bien.setEnabled(true);
         }
         SharedPreferences.Editor editor = leBikePrefs.edit();
         editor.putBoolean("BOOL_TRACKING_ROOT",bTrackingRoute);
@@ -416,4 +424,16 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     {
         fetchRoute();
     }
+
+    /* OnClick - Cargar ruta desde servidor, con error */
+    public void bienButtonOnClick(View view)
+    {
+        SharedPreferences serviceRetrievedLocations = getSharedPreferences("SERVICE_RETRIEVED_LOCATIONS_SHARED_PREFERENCES",MODE_PRIVATE);
+        Set<String> rutaGrabada = serviceRetrievedLocations.getStringSet("RUTA_SERVICE", null);
+        for (String loc : rutaGrabada)
+        {
+            Log.i("OnRouteMapActivity","bienOnClick: ruta grabada: " + loc);
+        }
+    }
+
 }

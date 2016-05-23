@@ -33,15 +33,18 @@
             android:gravity="center"
             android:text="Alertas:"/>
         <Button
+            android:id="@+id/bienButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
-            android:text="Bien"/>
+            android:text="Bien"
+            android:onClick="bienButtonOnClick"/>
         <Button
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
             android:text="Mal"
+            android:enabled="false"
             android:onClick="malButtonOnClick"/>
     </LinearLayout>
 

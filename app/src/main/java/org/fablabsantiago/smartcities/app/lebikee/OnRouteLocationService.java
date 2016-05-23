@@ -24,6 +24,12 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class OnRouteLocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks,
@@ -38,10 +44,26 @@ public class OnRouteLocationService extends Service implements
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
 
+    private SharedPreferences serviceLocationsSP;
+    private Set<String> locationSet = new HashSet<String>();
+    private String routeName;
+
     @Override
     public void onCreate()
     {
         Log.i("OnRouteLocationService","onCreate - in");
+
+        // Hay que hacer otro share preferences superior con registros de las rutas realizadas. Así
+        // también se da nombre a estos  nuevos shared preferences... Bah, no, na q ver, no nombre
+        // nuevo a nuevos sharedpreferences, pero si a los Set<String> de cada viaje. Todos
+        // contenidos en un shared preferences pero condistinto nombre, distintas variables.
+        serviceLocationsSP = getSharedPreferences("SERVICE_RETRIEVED_LOCATIONS_SHARED_PREFERENCES",MODE_PRIVATE);
+        // Nombre de la variable tipo: origen_destino + fecha|hora + número de viaje
+        // e.g.    fablab_casa_20160523-000454_5
+        // TODO: origen_destino son obtenidos del intent.
+        DateFormat date = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        routeName = "origen_destino" + "_" + date.format(new Date()) + "_" + "n";
+        Log.i("OnRouteLocationService","onCreate: routeName=" + routeName + "(not used)");
 
         if (mGoogleApiClient == null)
         {
@@ -144,6 +166,19 @@ public class OnRouteLocationService extends Service implements
     @Override
     public void onLocationChanged(Location location)
     {
+        // TODO: Implement SQLite database for handling all information and service locations
+        // 1. Handle the destinations, routes, and etcs
+        // 2. Saving the data generated in the service
+        // Now we're going to do it with shared preferences and Set<String>
+
+        // No location will never be equal to another because of the "et" field.
+        // et: Elapsed time from last boot
+        // location.toString() = "Location[fused -33,421216,-70,574286 acc=30 et=+6m17s57ms]"
+        locationSet.add(location.toString());
+        SharedPreferences.Editor editor = serviceLocationsSP.edit();
+        editor.putStringSet("RUTA_SERVICE", locationSet);
+        editor.commit();
+
         Log.i("OnRouteLocationService","onLocationChanged, " + location.toString());
         Toast.makeText(this, location.toString(),Toast.LENGTH_SHORT).show();
     }
