@@ -38,6 +38,7 @@
             android:layout_height="match_parent"
             android:layout_weight="0.2"
             android:text="Bien"
+            android:enabled="false"
             android:onClick="bienButtonOnClick"/>
         <Button
             android:layout_width="0dp"

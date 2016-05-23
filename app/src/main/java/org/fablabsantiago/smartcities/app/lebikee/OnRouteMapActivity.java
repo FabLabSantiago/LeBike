@@ -135,38 +135,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             return;
         }
 
-        //Check if location enabled       and notify
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-        {
-            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            {
-                Toast.makeText(this,"Only network location is available. It may not be precise.",Toast.LENGTH_SHORT).show();
-            }
-
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            if (mCurrentLocation == null)
-            {
-                Toast.makeText(this,"Couldn't retrieve location. Try again later.",Toast.LENGTH_SHORT).show();
-            }
-        }
-        else
-        {
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            if(mCurrentLocation == null)
-            {
-                Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
-                // TODO: desplegar menú para activar localización.
-            }
-            else
-            {
-                Toast.makeText(this,"Location is being retrieved neither from gps nor from network.",Toast.LENGTH_SHORT).show();
-                Log.i("OnRouteMapActivity","onMapReady: Location is being retrieved neither from gps nor from network.");
-
-            }
-        }
+        isLocationAvailable();
 
         //Setup initial focus view of the map and route markers
         //     Importante notar que en esta etapa del trabajo no estan incluidas ni se implementarán
@@ -227,6 +196,58 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         else
         {
             Toast.makeText(this,"Error loading route. Please contact: Mati",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected boolean isLocationAvailable()
+    {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Log.i("OnRouteMapAcivity","isLocationAvaiable: no location permissions");
+            return false;
+        }
+        //Check if location enabled       and notify
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+            {
+                Toast.makeText(this,"Only network location is available. It may not be precise.",Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mCurrentLocation == null)
+            {
+                Toast.makeText(this,"Couldn't retrieve location. Try again later.",Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return true;
+        }
+        else
+        {
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if(mCurrentLocation == null)
+            {
+                Toast.makeText(this,"Enable location settings, please :)",Toast.LENGTH_SHORT).show();
+                // TODO: desplegar menú para activar localización.
+                return false;
+            }
+            else
+            {
+                Toast.makeText(this,"Location is being retrieved neither from gps nor from network.",Toast.LENGTH_SHORT).show();
+                Log.i("OnRouteMapActivity","onMapReady: Location is being retrieved neither from gps nor from network.");
+                return true;
+            }
         }
     }
 
@@ -390,31 +411,37 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     public void readLocationInBackground(View view)
     {
         // TODO: confirm correct service load from the service.
-        // Actual implementation is blind to whats happening in the servie.
+        // Actual implementation is blind to whats happening in the service.
         Intent locationService = new Intent(this, OnRouteLocationService.class);
         if (!bTrackingRoute)
         {
-            Log.i("OnRouteMapActivity","onClick - comenzando servicio");
-            startService(locationService);
-            bTrackingRoute = true;
-
-            // TODO: El estado del botón bien debe ser actualizado con memoria.
-            // Guardar su estado y establecer su correcto estado al inicar de nuevo la aplicación.
-            Button bien = (Button) findViewById(R.id.bienButton);
-            bien.setEnabled(false);
+            if (isLocationAvailable())
+            {
+                Log.i("OnRouteMapActivity","onClick - comenzando servicio");
+                startService(locationService);
+                bTrackingRoute = true;
+                // TODO: Check if location is available through the background service.
+                // If location its shutted down while recording, push a notification warning.
+            }
+            else
+            {
+                Log.i("OnRouteMapActivity","onClick: ubicación no disponible");
+            }
         }
         else
         {
             Log.i("OnRouteMapActivity","onClick - cerrando servicio");
             stopService(locationService);
             bTrackingRoute = false;
-
-            Button bien = (Button) findViewById(R.id.bienButton);
-            bien.setEnabled(true);
         }
         SharedPreferences.Editor editor = leBikePrefs.edit();
         editor.putBoolean("BOOL_TRACKING_ROOT",bTrackingRoute);
         editor.commit();
+
+        // TODO: El estado del botón bien debe ser actualizado con memoria.
+        // Guardar su estado y establecer su correcto estado al inicar de nuevo la aplicación.
+        Button bien = (Button) findViewById(R.id.bienButton);
+        bien.setEnabled(!bTrackingRoute);
         refreshUI(bTrackingRoute);
 
     }
@@ -434,6 +461,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         {
             Log.i("OnRouteMapActivity","bienOnClick: ruta grabada: " + loc);
         }
-    }
 
+        Toast.makeText(this,rutaGrabada.toString(),Toast.LENGTH_SHORT).show();
+    }
 }
