@@ -12,9 +12,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
 public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCallback
 {
     protected final Context context = this;
+
+    HashMap<String, String> hmap = new HashMap<String, String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -23,17 +32,21 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lebike);
 
+        // Inicializamos los destinos
+        hmap.put("Casa","casa");
+        hmap.put("Beauchef 850","beauchef850");
+        hmap.put("Estación Mapocho","estacionmapocho");
     }
 
     @Override
     protected void onStart()
     {
+        Log.i("LeBikeActivity","onStart - in");
         super.onStart();
         final ListView patrimoniosListView = (ListView) findViewById(R.id.destinationsList);
-        String[] patrimonios = new String[] {
-                "Casa",
-                "Beauchef 850",
-                "Estación Mapocho"};
+        Set<String> destinationsSet = hmap.keySet();
+        String[] patrimonios = new String[3];
+        patrimonios = destinationsSet.toArray(patrimonios);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
         patrimoniosListView.setAdapter(adapter);
@@ -42,10 +55,10 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                int itemPosition     = position;
                 String  itemValue    = (String) patrimoniosListView.getItemAtPosition(position);
                 Log.i("LeBikeActivity","onItemClick, item:" + itemValue);
                 Intent onRouteMapIntent = new Intent(context, OnRouteMapActivity.class);
+                onRouteMapIntent.putExtra("DESTINO",hmap.get(itemValue));
                 startActivity(onRouteMapIntent);
             }
         });

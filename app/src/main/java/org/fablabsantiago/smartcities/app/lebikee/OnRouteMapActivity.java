@@ -48,6 +48,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener
 {
+    private String destinationName;
+
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
@@ -80,6 +82,9 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                     .addApi(LocationServices.API)
                     .build();
         }
+
+        Intent intent = getIntent();
+        destinationName = intent.getStringExtra("DESTINO");
     }
 
     public void refreshUI(boolean trackingRoute)
@@ -175,8 +180,18 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         //Load route from storage
         // TODO: to robust the code against failiures in xml parsing.
-        List<LatLng> route1 = loadRoute("fablab_estacionmapocho_2.gpx");
-        List<LatLng> route2 = loadRoute("fablab_estacionmapocho_1.gpx");
+
+        List<LatLng> route1 = null;
+        List<LatLng> route2 = null;
+        try
+        {
+            route1 = loadRoute("fablab_" + destinationName + "_2.gpx");
+            route2 = loadRoute("fablab_" + destinationName + "_1.gpx");
+        }
+        catch(Exception e)
+        {
+            Log.i("OnRouteMapActivity","onMapReady: in destination names. Verify hashmap values match the gpx file names");
+        }
 
         // GUI elemens for the map
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
