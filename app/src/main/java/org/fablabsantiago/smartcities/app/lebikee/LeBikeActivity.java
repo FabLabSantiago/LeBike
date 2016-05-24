@@ -59,6 +59,7 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
                 Log.i("LeBikeActivity","onItemClick, item:" + itemValue);
                 Intent onRouteMapIntent = new Intent(context, OnRouteMapActivity.class);
                 onRouteMapIntent.putExtra("DESTINO",hmap.get(itemValue));
+                onRouteMapIntent.putExtra("DISPLAY",itemValue);
                 startActivity(onRouteMapIntent);
             }
         });
