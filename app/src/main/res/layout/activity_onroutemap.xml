@@ -37,17 +37,21 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
+            android:background="#07892f"
             android:text="Bien"
+            android:textColor="#fffdee"
             android:enabled="false"
             android:onClick="bienButtonOnClick"/>
         <Button
+            android:id="@+id/malButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
+            android:background="#dc0000"
             android:text="Mal"
+            android:textColor="#ffe0e1"
             android:enabled="false"
             android:onClick="malButtonOnClick"/>
     </LinearLayout>
-
 
 </LinearLayout>
