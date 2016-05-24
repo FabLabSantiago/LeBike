@@ -49,6 +49,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener
 {
     private String destinationName;
+    private String destinationDisplayName;
+    private Destination destino;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -64,6 +66,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Log.i("OnRouteMapActivity","onCreate - in");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_onroutemap);
 
@@ -84,7 +87,9 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         }
 
         Intent intent = getIntent();
-        destinationName = intent.getStringExtra("DESTINO");
+        destino = FakeDataBase.createDestinationObject(intent.getStringExtra("DESTINO"), intent.getStringExtra("DISPLAY"));
+        Log.i("OnRouteMapActivity","onCreate - end");
+
     }
 
     public void refreshUI(boolean trackingRoute)
@@ -92,11 +97,17 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         Button trackRouteButton = (Button) findViewById(R.id.trackRouteButton);
         String buttonText = (trackingRoute)? "LLegué":"Ir ->";
         trackRouteButton.setText(buttonText);
+
+        //Button bienButton = (Button) findViewById(R.id.bienButton);
+        //bienButton.setText(String.format(destino.getPositiveHospotNumber()));
+        //Button malButton = (Button) findViewById(R.id.malButton);
+        //bienButton.setText(Integer.toString(destino.getNegativeHospotNumber()));
     }
 
     @Override
     protected void onStart()
     {
+        Log.i("OnRouteMapActivity","onStart - in");
         super.onStart();
         mGoogleApiClient.connect();
     }
@@ -104,6 +115,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     @Override
     protected void onStop()
     {
+        Log.i("OnRouteMapActivity","onStop - in");
         super.onStop();
         mGoogleApiClient.disconnect();
     }
@@ -128,7 +140,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         Log.i("MainActivity:onMapReady", "in");
         //Check for location permissions
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -156,7 +169,6 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         mCurrentLocation.setLongitude(-70.6277000);
 
         fablabSCL = new LatLng(-33.449796, -70.6277000);
-        destination = new LatLng(-33.432336,-70.653274);
 
         if(mCurrentLocation == null)
         {
@@ -172,7 +184,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             @Override
             public boolean onMyLocationButtonClick()
             {
-                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destino.latLng, fablabSCL),100));
                 return true;
             }
         });
@@ -185,8 +197,10 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         List<LatLng> route2 = null;
         try
         {
-            route1 = loadRoute("fablab_" + destinationName + "_2.gpx");
-            route2 = loadRoute("fablab_" + destinationName + "_1.gpx");
+            //route1 = loadRoute("fablab_" + destinationName + "_2.gpx");
+            //route2 = loadRoute("fablab_" + destinationName + "_1.gpx");
+            route1 = destino.getRoute(this,1);
+            route2 = destino.getRoute(this,2);
         }
         catch(Exception e)
         {
@@ -194,14 +208,14 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         }
 
         // GUI elemens for the map
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destination, fablabSCL),100));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destino.latLng, fablabSCL),100));
         mMap.addMarker(new MarkerOptions()
                 .position(fablabSCL)
                 .title("Fablab Santiago")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         mMap.addMarker(new MarkerOptions()
-                .position(destination)
-                .title("Estación Mapocho")
+                .position(destino.latLng)
+                .title(destino.displayName)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
         if(route1 != null && route2 != null)
         {
@@ -211,6 +225,23 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         else
         {
             Toast.makeText(this,"Error loading route. Please contact: Mati",Toast.LENGTH_SHORT).show();
+        }
+
+        for(int i=0; i<destino.getPositiveHospotNumber(); i++)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(destino.posHotspots.get(i))
+                    .title(destino.posHotspotsName.get(i))
+                    .snippet(destino.posHotspotsDesc.get(i))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        }
+        for(int i=0; i<destino.getNegativeHospotNumber(); i++)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(destino.negHotspots.get(i))
+                    .title(destino.negHotspotsName.get(i))
+                    .snippet(destino.negHotspotsDesc.get(i))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         }
     }
 
