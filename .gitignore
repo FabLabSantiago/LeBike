@@ -8,6 +8,9 @@
 /captures
 .idea/vcs.xml
 
+# Recursos Gráficos
+Recursos\ Graficos/*
+
 # Built application files
 *.apk
 *.ap_
