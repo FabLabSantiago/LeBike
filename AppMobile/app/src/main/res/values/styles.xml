@@ -15,4 +15,8 @@
         <item name="android:windowBackground">@drawable/fondo_lebike_activity</item>
     </style>
 
+    <style name="StartTheme" parent="Theme.AppCompat.Light.NoActionBar">
+
+    </style>
+
 </resources>
