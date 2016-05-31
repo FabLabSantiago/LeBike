@@ -1,20 +1,28 @@
 # LeBike
 
-## File structure 
+## Project's file structure 
 
 ```
 ./README.md
-
+  .
 ├── AppMobile
-│   └── Media
-│       └── Mockup_01
+│   ├── Media
+│   │   └── Mockup_01
+│   ├── RecursosExternos
+│   ├── Screenshots
+│   ├── app
+│   │   └── src
+│   └── gradle
+│       └── wrapper
 ├── AppWeb
 │   └── Media
 │       └── Mockup_01
 └── Device
     ├── Electronic
-    └── Firmware
-        └── sck_lebike
+    ├── Firmware
+    │   └── sck_lebike
+    └── Media
+        └── Prototype_01
 
-10 directories
+18 directories
 ```
