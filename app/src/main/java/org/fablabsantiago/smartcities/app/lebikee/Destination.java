@@ -32,6 +32,8 @@ public class Destination
     public LatLng latLng;
     public List<LatLng> posHotspots;
     public List<LatLng> negHotspots;
+    public List<Boolean> posHotspotsBool;
+    public List<Boolean> negHotspotsBool;
     public List<String> posHotspotsName;
     public List<String> negHotspotsName;
     public List<String> posHotspotsDesc;
@@ -51,6 +53,8 @@ public class Destination
         latLng               = latlng;
         posHotspots          = new ArrayList<LatLng>();
         negHotspots          = new ArrayList<LatLng>();
+        posHotspotsBool      = new ArrayList<Boolean>();
+        negHotspotsBool      = new ArrayList<Boolean>();
         posHotspotsName      = new ArrayList<String>();
         negHotspotsName      = new ArrayList<String>();
         posHotspotsDesc      = new ArrayList<String>();
@@ -96,21 +100,22 @@ public class Destination
         return null;
     }
 
-    public void addPositiveHotspot(LatLng hotspot, String name, String description)
+    public void addPositiveHotspot(LatLng hotspot, Boolean state, String name, String description)
     {
         Log.i("Destination","addPositiveHotspot - in");
 
         DateFormat date = new SimpleDateFormat("yyyyMMdd-HHmmss");
-        addPositiveHotspot(hotspot, name, description, date.format(new Date()));
+        addPositiveHotspot(hotspot, state, name, description, date.format(new Date()));
 
         Log.i("Destination","addPositiveHotspot - end");
     }
 
-    public void addPositiveHotspot(LatLng hotspot, String name, String description, String date)
+    public void addPositiveHotspot(LatLng hotspot, Boolean state, String name, String description, String date)
     {
         Log.i("Destination","addPositiveHotspot(+date) - in" + hotspot.toString());
 
         posHotspots.add(hotspot);
+        posHotspotsBool.add(state);
         posHotspotsName.add(name);
         posHotspotsDesc.add(description);
         posHotspotsDateTime.add(date);
@@ -118,17 +123,18 @@ public class Destination
         Log.i("Destination","addPositiveHotspot(+date) - end");
     }
 
-    public void addNegativeHotspot(LatLng hotspot, String name, String description)
+    public void addNegativeHotspot(LatLng hotspot, Boolean state, String name, String description)
     {
         Log.i("Destination","addNegativeHotspot - in");
 
         DateFormat date = new SimpleDateFormat("yyyyMMdd-HHmmss");
-        addNegativeHotspot(hotspot, name, description, date.format(new Date()));
+        addNegativeHotspot(hotspot, state, name, description, date.format(new Date()));
     }
 
-    public void addNegativeHotspot(LatLng hotspot, String name, String description, String date)
+    public void addNegativeHotspot(LatLng hotspot, Boolean state, String name, String description, String date)
     {
         negHotspots.add(hotspot);
+        negHotspotsBool.add(state);
         negHotspotsName.add(name);
         negHotspotsDesc.add(description);
         negHotspotsDateTime.add(date);

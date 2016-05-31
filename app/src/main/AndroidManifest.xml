@@ -16,6 +16,7 @@
             android:value="@string/google_maps_key"/>
 
         <activity android:name=".StartActivity">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -25,6 +26,7 @@
 
         <activity android:name=".LeBikeActivity"
                   android:label="LeBike"
+                  android:theme="@style/LeBikeTheme"
                   android:parentActivityName=".StartActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

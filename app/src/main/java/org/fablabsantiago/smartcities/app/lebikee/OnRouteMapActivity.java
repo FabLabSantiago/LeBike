@@ -1,20 +1,30 @@
 package org.fablabsantiago.smartcities.app.lebikee;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,12 +35,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.w3c.dom.Text;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -59,6 +75,9 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     private LatLng destination;
     private LatLng fablabSCL;
+    private ArrayList<Marker> mapMarkers;
+    private ArrayList<Polyline> mapPolylines;
+    private CameraPosition mapCameraPosition;
 
     SharedPreferences leBikePrefs;
     boolean bTrackingRoute;
@@ -70,12 +89,20 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_onroutemap);
 
+        Intent intent = getIntent();
+        String destinationDisplayName = intent.getStringExtra("DISPLAY");
+        setTitle(destinationDisplayName);
+
         // leBikePrefs has:
         //     - trackingRoute: true , si se esta grabando una ruta
         //                      falso, si no
         leBikePrefs = getSharedPreferences("leBikePreferences",MODE_PRIVATE);
         bTrackingRoute = leBikePrefs.getBoolean("BOOL_TRACKING_ROOT",false);
-        refreshUI(bTrackingRoute);
+        refreshUIOnRouteStarted(bTrackingRoute);
+
+        // Initialize markers and polylines array for storing.
+        mapMarkers = new ArrayList<Marker>();
+        mapPolylines = new ArrayList<Polyline>();
 
         if (mGoogleApiClient == null)
         {
@@ -86,17 +113,16 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                     .build();
         }
 
-        Intent intent = getIntent();
-        destino = FakeDataBase.createDestinationObject(intent.getStringExtra("DESTINO"), intent.getStringExtra("DISPLAY"));
+        destino = FakeDataBase.createDestinationObject(intent.getStringExtra("DESTINO"), destinationDisplayName);
         Log.i("OnRouteMapActivity","onCreate - end");
 
     }
 
-    public void refreshUI(boolean trackingRoute)
+    public void refreshUIOnRouteStarted(boolean trackingRoute)
     {
-        Button trackRouteButton = (Button) findViewById(R.id.trackRouteButton);
-        String buttonText = (trackingRoute)? "LLegué":"Ir ->";
-        trackRouteButton.setText(buttonText);
+        ImageButton trackRouteButton = (ImageButton) findViewById(R.id.trackRouteButton);
+        int buttonText = Color.parseColor((trackingRoute)? "#CCec903a":"#00000000");
+        trackRouteButton.setBackgroundColor(buttonText);
 
         //Button bienButton = (Button) findViewById(R.id.bienButton);
         //bienButton.setText(String.format(destino.getPositiveHospotNumber()));
@@ -137,6 +163,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
     public void onMapReady(GoogleMap googleMap)
     {
         mMap = googleMap;
+        // Initialize custom ArrayList's like this it's strictly necessary, learned empiricaly,
+        // dont do it and it dont work.
 
         Log.i("MainActivity:onMapReady", "in");
         //Check for location permissions
@@ -154,6 +182,20 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         }
 
         isLocationAvailable();
+
+        //Verify if we're reloading the map, in order not to redefine and reconfigure old markers
+        if (mapPolylines.size() != 0)
+        {
+            if (mapCameraPosition != null)
+            {
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(mapCameraPosition));
+            }
+            else
+            {
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destino.latLng, fablabSCL),100));
+            }
+            return;
+        }
 
         //Setup initial focus view of the map and route markers
         //     Importante notar que en esta etapa del trabajo no estan incluidas ni se implementarán
@@ -188,7 +230,8 @@ public class OnRouteMapActivity extends AppCompatActivity implements
                 return true;
             }
         });
-        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        mMap.setInfoWindowAdapter(new HotspotInfoAdapter(this, getLayoutInflater()));
 
         //Load route from storage
         // TODO: to robust the code against failiures in xml parsing.
@@ -209,18 +252,24 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         // GUI elemens for the map
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(correctBounds(destino.latLng, fablabSCL),100));
-        mMap.addMarker(new MarkerOptions()
+        Marker origenMarker = mMap.addMarker(new MarkerOptions()
                 .position(fablabSCL)
                 .title("Fablab Santiago")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-        mMap.addMarker(new MarkerOptions()
+                .snippet("origen")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_inicio)));
+        Marker destinoMarker = mMap.addMarker(new MarkerOptions()
                 .position(destino.latLng)
                 .title(destino.displayName)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                .snippet("destino")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_stop)));
+        mapMarkers.add(origenMarker);
+        mapMarkers.add(destinoMarker);
         if(route1 != null && route2 != null)
         {
-            mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.DKGRAY).addAll(route1));
-            mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.GRAY).addAll(route2));
+            Polyline ruta1Polyline = mMap.addPolyline(new PolylineOptions().width((float) 15.0).color(Color.parseColor("#80ec903a")).addAll(route1));
+            Polyline ruta2Polyline = mMap.addPolyline(new PolylineOptions().width((float) 5.0).color(Color.GRAY).addAll(route2));
+            mapPolylines.add(ruta1Polyline);
+            mapPolylines.add(ruta2Polyline);
         }
         else
         {
@@ -229,20 +278,49 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         for(int i=0; i<destino.getPositiveHospotNumber(); i++)
         {
-            mMap.addMarker(new MarkerOptions()
+            Marker posMarker = mMap.addMarker(new MarkerOptions()
                     .position(destino.posHotspots.get(i))
                     .title(destino.posHotspotsName.get(i))
-                    .snippet(destino.posHotspotsDesc.get(i))
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    .snippet("positive")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_positive)));
+            mapMarkers.add(posMarker);
         }
         for(int i=0; i<destino.getNegativeHospotNumber(); i++)
         {
-            mMap.addMarker(new MarkerOptions()
+            Marker negMarker = mMap.addMarker(new MarkerOptions()
                     .position(destino.negHotspots.get(i))
                     .title(destino.negHotspotsName.get(i))
-                    .snippet(destino.negHotspotsDesc.get(i))
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                    .snippet("negative")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_negative)));
+            mapMarkers.add(negMarker);
         }
+
+        refreshRouteStats();
+
+        //Setup de las acciones en el mapa. Clicks sobre marcadores y polylines además del mismo mapa.
+        // Tener ojo y pensar bien despues en los flujos de variables y estados, así como el flujo
+        // de vida de las actividades y sus procesos correspondientes.
+        mMap.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
+        {
+            @Override
+            public void onPolylineClick(Polyline polyline)
+            {
+                Log.i("OnRouteMapActivity","onPolylineClick - in");
+                Integer elementIndex = mapPolylines.indexOf(polyline);
+
+                polyline.setColor(Color.parseColor("#80ec903a"));
+                polyline.setWidth((float) 15.0);
+                for (int i = 0; i < mapPolylines.size(); i++)
+                {
+                    if (i != elementIndex)
+                    {
+                        Polyline poly = mapPolylines.get(i);
+                        poly.setColor(Color.GRAY);
+                        poly.setWidth((float) 5.0);
+                    }
+                }
+            }
+        });
     }
 
     protected boolean isLocationAvailable()
@@ -453,6 +531,49 @@ public class OnRouteMapActivity extends AppCompatActivity implements
         Log.i("OnRouteMapActivity","onConnectionFailed - in");
     }
 
+    public void showRecordedRoute()
+    {
+        SharedPreferences serviceRetrievedLocations = getSharedPreferences("SERVICE_RETRIEVED_LOCATIONS_SHARED_PREFERENCES",MODE_PRIVATE);
+        Set<String> rutaGrabada = serviceRetrievedLocations.getStringSet("RUTA_SERVICE", null);
+        for (String loc : rutaGrabada)
+        {
+            Log.i("OnRouteMapActivity","bienOnClick: ruta grabada: " + loc);
+        }
+
+        Toast.makeText(this,rutaGrabada.toString(),Toast.LENGTH_SHORT).show();
+    }
+
+    private void refreshRouteStats()
+    {
+        int pos = destino.getPositiveHospotNumber();
+        int neg = destino.getNegativeHospotNumber();
+        int total = pos + neg;
+        int point;
+
+        point = Math.round(10 + 2 * pos - neg);
+        pos = Math.round(100 * pos/total);
+        neg = Math.round(100 * neg/total);
+
+        Toast.makeText(this,Integer.toString(pos) + "%",Toast.LENGTH_SHORT).show();
+
+        ProgressBar posProgressBar = (ProgressBar) findViewById(R.id.posProgressBar);
+        ProgressBar negProgressBar = (ProgressBar) findViewById(R.id.negProgressBar);
+        TextView posPercent = (TextView) findViewById(R.id.posProgressBarPercent);
+        TextView negPercent = (TextView) findViewById(R.id.negProgressBarPercent);
+        TextView points = (TextView) findViewById(R.id.routePointsTextView);
+
+        posProgressBar.setProgress(pos);
+        negProgressBar.setProgress(neg);
+        posPercent.setText(Integer.toString(pos) + "%");
+        negPercent.setText(Integer.toString(neg) + "%");
+        points.setText(Integer.toString(point) + " pts");
+
+    }
+
+    /*                           /
+     *     ON_CLICK's            /
+     *                          */
+
     /* OnClick - Comenzar recorrido */
     public void readLocationInBackground(View view)
     {
@@ -479,6 +600,7 @@ public class OnRouteMapActivity extends AppCompatActivity implements
             Log.i("OnRouteMapActivity","onClick - cerrando servicio");
             stopService(locationService);
             bTrackingRoute = false;
+            showRecordedRoute();
         }
         SharedPreferences.Editor editor = leBikePrefs.edit();
         editor.putBoolean("BOOL_TRACKING_ROOT",bTrackingRoute);
@@ -486,28 +608,45 @@ public class OnRouteMapActivity extends AppCompatActivity implements
 
         // TODO: El estado del botón bien debe ser actualizado con memoria.
         // Guardar su estado y establecer su correcto estado al inicar de nuevo la aplicación.
-        Button bien = (Button) findViewById(R.id.bienButton);
-        bien.setEnabled(!bTrackingRoute);
-        refreshUI(bTrackingRoute);
-
+        //ProgressBar bien = (ProgressBar) findViewById(R.id.goodProgressBar);
+        //bien.setEnabled(!bTrackingRoute);
+        refreshUIOnRouteStarted(bTrackingRoute);
     }
 
-    /* OnClick - Cargar ruta desde servidor, con error */
-    public void malButtonOnClick(View view)
+    public void routeSelected(View view)
     {
-        fetchRoute();
-    }
+        String id = getResources().getResourceName(view.getId());
+        id = id.substring(id.length()-5,id.length());
 
-    /* OnClick - Cargar ruta desde servidor, con error */
-    public void bienButtonOnClick(View view)
-    {
-        SharedPreferences serviceRetrievedLocations = getSharedPreferences("SERVICE_RETRIEVED_LOCATIONS_SHARED_PREFERENCES",MODE_PRIVATE);
-        Set<String> rutaGrabada = serviceRetrievedLocations.getStringSet("RUTA_SERVICE", null);
-        for (String loc : rutaGrabada)
+        TextView ruta = (TextView) view;
+        TextView ruta_;
+        Integer elementIndex;
+
+        if (id.equals("ruta1"))
         {
-            Log.i("OnRouteMapActivity","bienOnClick: ruta grabada: " + loc);
+            ruta_ = (TextView) findViewById(R.id.ruta2);
+            elementIndex = 0;
+        }
+        else
+        {
+            ruta_ = (TextView) findViewById(R.id.ruta1);
+            elementIndex = 1;
         }
 
-        Toast.makeText(this,rutaGrabada.toString(),Toast.LENGTH_SHORT).show();
+        ruta.setTextSize((float) 20.0);
+        ruta_.setTextSize((float) 14.0);
+
+        Log.i("OnRouteMapActivity","elementIndex:" + Integer.toString(elementIndex));
+
+        mapPolylines.get(elementIndex).setColor(Color.parseColor("#80ec903a"));
+        mapPolylines.get(elementIndex).setWidth((float) 15.0);
+        for (int i = 0; i < mapPolylines.size(); i++)
+        {
+            if (i != elementIndex)
+            {
+                mapPolylines.get(i).setColor(Color.GRAY);
+                mapPolylines.get(i).setWidth((float) 5.0);
+            }
+        }
     }
 }

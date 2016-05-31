@@ -36,6 +36,8 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
         hmap.put("Casa","casa");
         hmap.put("Beauchef 850","beauchef850");
         hmap.put("Estación Mapocho","estacionmapocho");
+        hmap.put("Fablab","fablab");
+        hmap.put("Café","cafe");
     }
 
     @Override
@@ -43,12 +45,15 @@ public class LeBikeActivity extends AppCompatActivity //implements OnMapReadyCal
     {
         Log.i("LeBikeActivity","onStart - in");
         super.onStart();
-        final ListView patrimoniosListView = (ListView) findViewById(R.id.destinationsList);
         Set<String> destinationsSet = hmap.keySet();
-        String[] patrimonios = new String[3];
-        patrimonios = destinationsSet.toArray(patrimonios);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
+        String[] patrimonios2 = new String[3];
+        patrimonios2 = destinationsSet.toArray(patrimonios2);
+        ArrayList<String> patrimonios = new ArrayList<String>(Arrays.asList(patrimonios2));
+
+        final ListView patrimoniosListView = (ListView) findViewById(R.id.destinationsList);
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        //        android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
+        DondeVasAdapter adapter = new DondeVasAdapter(this, patrimonios);
         patrimoniosListView.setAdapter(adapter);
         patrimoniosListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
