@@ -23,12 +23,12 @@ public class Patrimonio
     }
 
     public static Patrimonio[] ITEMS = {
-            new Patrimonio("Jaguar F-Type 2015", R.drawable.patrimonio1),
-            new Patrimonio("Mercedes AMG-GT", R.drawable.patrimonio2),
-            new Patrimonio("Mazda MX-5", R.drawable.patrimonio2),
-            new Patrimonio("Porsche 911 GTS", R.drawable.patrimonio1),
-            new Patrimonio("BMW Serie 6", R.drawable.patrimonio1),
-            new Patrimonio("Casa Matriz", R.drawable.patrimonio2)
+            new Patrimonio("Iglesia Convento Del Carmen Bajo", R.drawable.patrimonio1),
+            new Patrimonio("Iglesia del Milagroso Niño Jesus de Praga", R.drawable.patrimonio2),
+            new Patrimonio("Cité Capitol", R.drawable.patrimonio2),
+            new Patrimonio("Conjunto Picarte", R.drawable.patrimonio1),
+            new Patrimonio("Piscina Escolar Universidad de Chile", R.drawable.patrimonio1),
+            new Patrimonio("Estación Mapocho", R.drawable.patrimonio2)
     };
 
     /**

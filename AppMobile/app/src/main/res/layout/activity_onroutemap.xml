@@ -40,6 +40,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:elevation="8dp"
         android:orientation="horizontal"
         android:layout_gravity="bottom"
         android:gravity="center_vertical"

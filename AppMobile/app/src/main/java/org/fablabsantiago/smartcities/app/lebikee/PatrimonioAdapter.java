@@ -38,7 +38,7 @@ public class PatrimonioAdapter extends BaseAdapter
         if (view == null) {
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.item_patente, viewGroup, false);
+            view = inflater.inflate(R.layout.item_patrimonios, viewGroup, false);
         }
 
         ImageView imagenCoche = (ImageView) view.findViewById(R.id.imagen_coche);

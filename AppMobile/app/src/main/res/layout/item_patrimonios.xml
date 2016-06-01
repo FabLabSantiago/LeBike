@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@drawable/shape_patrimonio_item_texteview_background"
-        android:maxLines="1"
         android:padding="16dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         android:textColor="@android:color/white" />
