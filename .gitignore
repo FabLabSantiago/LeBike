@@ -17,6 +17,8 @@ clean.sh
 /build
 /captures
 .idea/vcs.xml
+/.idea/*
+
 
 # Recursos Gráficos
 Recursos\ Graficos/*

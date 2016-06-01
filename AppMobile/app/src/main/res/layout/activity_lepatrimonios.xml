@@ -14,17 +14,14 @@
         android:background="#5670ff"
         android:onClick="activatePatrimoniosAlarm"/>
 
-    <!-- El GridView puede servir para esto! parece-->
-
-    <!--
-    <ListView
-        android:id="@+id/patrimoniosListView"
+    <GridView
+        android:id="@+id/patrimoniosGridView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-    </ListView>
-    -->
-
+        android:layout_height="match_parent"
+        android:columnWidth="120dp"
+        android:horizontalSpacing="3dp"
+        android:numColumns="auto_fit"
+        android:padding="3dp"
+        android:verticalSpacing="3dp"/>
 
 </LinearLayout>

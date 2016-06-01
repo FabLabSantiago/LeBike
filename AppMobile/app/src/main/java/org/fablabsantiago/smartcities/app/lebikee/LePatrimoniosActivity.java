@@ -1,11 +1,14 @@
 package org.fablabsantiago.smartcities.app.lebikee;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -44,6 +47,29 @@ public class LePatrimoniosActivity extends AppCompatActivity
         });
         */
 
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        final GridView patrimoniosGridView = (GridView) findViewById(R.id.patrimoniosGridView);
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        //        android.R.layout.simple_list_item_1,android.R.id.text1,patrimonios);
+        PatrimonioAdapter adapter = new PatrimonioAdapter(this);
+        patrimoniosGridView.setAdapter(adapter);
+        patrimoniosGridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                String url = "http://www.example.com";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
     }
 
     public void activatePatrimoniosAlarm(View view)
