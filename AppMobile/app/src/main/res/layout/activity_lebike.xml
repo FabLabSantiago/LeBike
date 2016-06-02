@@ -12,7 +12,8 @@
         android:layout_gravity="right"
         android:layout_marginRight="15dp"
         android:layout_marginTop="40dp"
-        android:background="@drawable/ic_gps_fixed_white_24dp"/>
+        android:background="@drawable/ic_gps_fixed_white_24dp"
+        android:visibility="invisible"/>
 
     <LinearLayout
         android:layout_width="@dimen/lebike_dondevas_width"
@@ -64,7 +65,8 @@
             android:layout_width="@dimen/bottom_bar_buttons_size"
             android:layout_height="@dimen/bottom_bar_buttons_size"
             android:background="@drawable/ic_destinos_button"
-            android:textSize="12sp"/>
+            android:textSize="12sp"
+            android:onClick="misDestinos"/>
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -73,7 +75,8 @@
             android:layout_width="@dimen/bottom_bar_buttons_size"
             android:layout_height="@dimen/bottom_bar_buttons_size"
             android:background="@drawable/ic_misalertas_button"
-            android:textSize="12sp"/>
+            android:textSize="12sp"
+            android:onClick="misAlertas"/>
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"

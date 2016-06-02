@@ -15,12 +15,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Comentario de algún tipo"
-        android:textSize="12sp"
-        android:layout_marginTop="36dp"
+        android:text="&quot;Perros asesinos atacan al Fernando!&quot;"
+        android:textSize="11sp"
+        android:layout_marginTop="24dp"
         android:layout_marginLeft="8dp"
         android:layout_alignStart="@+id/comentario_imageenn"
-        android:textColor="#fff"/>
+        android:textColor="#fff"
+        android:layout_toStartOf="@+id/imageView"
+        android:id="@+id/infoWindowInfoTextView"/>
     <ImageView
         android:layout_width="28dp"
         android:layout_height="28dp"
@@ -28,5 +30,15 @@
         android:layout_marginRight="6dp"
         android:layout_gravity="right|top"
         android:layout_marginTop="7dp"
-        android:layout_alignEnd="@+id/comentario_imageenn"/>
+        android:layout_alignEnd="@+id/comentario_imageenn"
+        android:id="@+id/imageView"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hace 3 minutos"
+        android:textSize="8sp"
+        android:layout_marginLeft="8dp"
+        android:textColor="#fff"
+        android:layout_below="@+id/infoWindowInfoTextView"
+        android:layout_alignEnd="@+id/infoWindowInfoTextView"/>
 </RelativeLayout>

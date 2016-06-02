@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="org.fablabsantiago.smartcities.app.lebikee"
+<manifest package="org.fablabsantiago.smartcities.app.appmobile"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <application
         android:allowBackup="true"
@@ -16,8 +20,17 @@
             android:value="@string/google_maps_key"/>
 
         <activity
-            android:name=".StartActivity"
+            android:name="org.fablabsantiago.smartcities.app.appmobile.StartActivity"
             android:theme="@style/StartTheme">
+        </activity>
+
+        <activity android:name="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity"
+                  android:label="LeBike"
+                  android:theme="@style/LeBikeTheme"
+                  android:parentActivityName="org.fablabsantiago.smartcities.app.appmobile.StartActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.fablabsantiago.smartcities.app.appmobile.StartActivity"/>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -26,33 +39,43 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".LeBikeActivity"
-                  android:label="LeBike"
-                  android:theme="@style/LeBikeTheme"
-                  android:parentActivityName=".StartActivity">
+        <activity android:name="org.fablabsantiago.smartcities.app.appmobile.MisDestinosActivity"
+                  android:label="Mis Destinos"
+            android:parentActivityName="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".StartActivity"/>
+                android:value="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity"/>
         </activity>
 
-        <activity android:name=".LePatrimoniosActivity"
+        <activity android:name="org.fablabsantiago.smartcities.app.appmobile.OnRouteMapActivity"
+                  android:label="LeBike"
+                  android:parentActivityName="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity"/>
+        </activity>
+
+        <activity android:name="org.fablabsantiago.smartcities.app.appmobile.LePatrimoniosActivity"
                   android:label="LePatrimonios"
                   android:theme="@style/LePatrimonios"
-                  android:parentActivityName=".StartActivity">
+                  android:parentActivityName="org.fablabsantiago.smartcities.app.appmobile.StartActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".StartActivity"/>
+                android:value="org.fablabsantiago.smartcities.app.appmobile.StartActivity"/>
         </activity>
 
-        <activity android:name=".OnRouteMapActivity"
-                  android:label="LeBike"
-                  android:parentActivityName=".LeBikeActivity">
+        <activity
+            android:name=".MisAlertasActivity"
+            android:label="Mis Alertas"
+            android:parentActivityName="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".LeBikeActivity"/>
+                android:value="org.fablabsantiago.smartcities.app.appmobile.LeBikeActivity"/>
         </activity>
 
-        <service android:name=".OnRouteLocationService" />
+        <activity android:name=".MisAlertasTodas"></activity>
+
+        <service android:name="org.fablabsantiago.smartcities.app.appmobile.OnRouteLocationService" />
     </application>
 
 
